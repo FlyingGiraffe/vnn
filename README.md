@@ -1,6 +1,6 @@
 # Vector Neurons: A General Framework for SO(3)-Equivariant Networks
 
-Created by <a href="https://geometry.stanford.edu/member/congyue/" target="_blank">Congyue Deng</a>, <a href="https://orlitany.github.io/" target="_blank">Or Litany</a>, <a href="http://ivg.au.tsinghua.edu.cn/people/Yueqi_Duan/" target="_blank">Yueqi Duan</a>, <a href="https://scholar.google.com/citations?user=zsGbyGYAAAAJ&hl=fr" target="_blank">Adrien Poulenard</a>, <a href="https://taiya.github.io/" target="_blank">Andrea Tagliasacchi</a> <a href="http://geometry.stanford.edu/member/guibas/" target="_blank">Leonidas Guibas</a>.
+Created by <a href="https://geometry.stanford.edu/member/congyue/" target="_blank">Congyue Deng</a>, <a href="https://orlitany.github.io/" target="_blank">Or Litany</a>, <a href="http://ivg.au.tsinghua.edu.cn/people/Yueqi_Duan/" target="_blank">Yueqi Duan</a>, <a href="https://scholar.google.com/citations?user=zsGbyGYAAAAJ&hl=fr" target="_blank">Adrien Poulenard</a>, <a href="https://taiya.github.io/" target="_blank">Andrea Tagliasacchi</a>, and <a href="http://geometry.stanford.edu/member/guibas/" target="_blank">Leonidas Guibas</a>.
 
 We introduce a general framework built on top of what we call Vector Neurons for creating SO(3) equivariant neural networks. Extending neurons from single scalars to 3D vectors, our vector neurons transport SO(3) actions to latent spaces and provide a framework for building equivariance in common neural operations including linear layers, non-linearities, pooling, and normalization.
 
@@ -9,7 +9,7 @@ We introduce a general framework built on top of what we call Vector Neurons for
 ## Overview
 `vnn` is the author's implementation of Vector Neuron Networks with PointNet and DGCNN backbones. The current version only supports input data without normals.
 
-<img src='images/vn_teaser.PNG' width=280><img src='images/vector_neurons.PNG' width=480>
+<img src='images/vn_teaser.PNG' width=300> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src='images/vector_neurons.PNG' width=350>
 
 ## Data Preparation
 

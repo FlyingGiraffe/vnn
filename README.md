@@ -4,7 +4,7 @@ Created by <a href="https://geometry.stanford.edu/member/congyue/" target="_blan
 
 We introduce a general framework built on top of what we call Vector Neurons for creating SO(3) equivariant neural networks. Extending neurons from single scalars to 3D vectors, our vector neurons transport SO(3) actions to latent spaces and provide a framework for building equivariance in common neural operations including linear layers, non-linearities, pooling, and normalization.
 
-[[Project]](https://cs.stanford.edu/~congyue/vnn/) [[Paper]](https://arxiv.org/)
+[[Project]](https://cs.stanford.edu/~congyue/vnn/) [[Paper]](https://arxiv.org/pdf/2104.12229.pdf)
 
 ## Overview
 `vnn` is the author's implementation of Vector Neuron Networks with PointNet and DGCNN backbones. The current version only supports input data without normals.
@@ -68,11 +68,11 @@ python test_partseg.py --model vn_dgcnn_partseg --rot so3 --log_dir vn_dgcnn/ali
 ## Citation
 Please cite this paper if you want to use it in your work,
 
-    @misc{deng2021vn,
+    @article{deng2021vn,
       title={Vector Neurons: a general framework for SO(3)-equivariant networks},
-      author={Congyue Deng, Or Litany, Yueqi Duan, Adrien Poulenard, Andrea Tagliasacchi, Leonidas Guibas},
-      year={2021},
-      booktitle={arXiv (link available soon)}
+      author={Deng, Congyue and Litany, Or and Duan, Yueqi and Poulenard, Adrien and Tagliasacchi, Andrea and Guibas, Leonidas},
+      journal={arXiv preprint arXiv:2104.12229},
+      year={2021}
     } 
 
 ## License

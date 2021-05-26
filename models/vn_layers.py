@@ -117,7 +117,8 @@ class VNBatchNorm(nn.Module):
         '''
         x: point features of shape [B, N_feat, 3, N_samples, ...]
         '''
-        norm = torch.sqrt((x*x).sum(2))
+        # norm = torch.sqrt((x*x).sum(2))
+        norm = torch.norm(x, dim=2) + EPS
         norm_bn = self.bn(norm)
         norm = norm.unsqueeze(2)
         norm_bn = norm_bn.unsqueeze(2)

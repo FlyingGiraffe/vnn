@@ -42,12 +42,12 @@ def parse_args():
                         choices = ['pointnet_partseg', 'vn_pointnet_partseg', 'dgcnn_partseg', 'vn_dgcnn_partseg'])
     parser.add_argument('--batch_size', type=int, default=16, help='Batch Size during training [default: 16]')
     parser.add_argument('--epoch', default=250, type=int, help='Epoch to run [default: 250]')
-    parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate [default: 0.001]')
+    parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate (for SGD it is multiplied by 100) [default: 0.001]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='Weight decay [default: 1e-4]')
     parser.add_argument('--step_size', type=int, default=20, help='Decay step for lr decay [default: every 20 epochs]')
     parser.add_argument('--lr_decay', type=float, default=0.5, help='Decay rate for lr decay [default: 0.5]')
     parser.add_argument('--gpu', type=str, default='0', help='GPU to use [default: GPU 0]')
-    parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD [default: Adam]')
+    parser.add_argument('--optimizer', type=str, default='SGD', help='Adam or SGD [default: SGD]')
     parser.add_argument('--log_dir', type=str, default='vn_dgcnn/aligned', help='Experiment root [default: vn_dgcnn/aligned]')
     parser.add_argument('--npoint', type=int, default=2048, help='Point Number [default: 2048]')
     parser.add_argument('--normal', action='store_true', default=False, help='Whether to use normal information [default: False]')
@@ -139,7 +139,7 @@ def main(args):
             weight_decay=args.decay_rate
         )
     else:
-        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate, momentum=0.9)
+        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate*100, momentum=0.9)
 
     def bn_momentum_adjust(m, momentum):
         if isinstance(m, torch.nn.BatchNorm2d) or isinstance(m, torch.nn.BatchNorm1d):

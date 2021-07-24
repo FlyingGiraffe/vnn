@@ -30,9 +30,9 @@ def parse_args():
                         choices = ['pointnet_cls', 'vn_pointnet_cls', 'dgcnn_cls', 'vn_dgcnn_cls'])
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size in training [default: 32]')
     parser.add_argument('--epoch', default=250, type=int, help='Number of epoch in training [default: 250]')
-    parser.add_argument('--learning_rate', default=0.001, type=float, help='Learning rate in training [default: 0.001]')
+    parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate (for SGD it is multiplied by 100) [default: 0.001]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='Decay rate [default: 1e-4]')
-    parser.add_argument('--optimizer', type=str, default='Adam', help='Pptimizer for training [default: Adam]')
+    parser.add_argument('--optimizer', type=str, default='SGD', help='Pptimizer for training [default: SGD]')
     parser.add_argument('--gpu', type=str, default='0', help='Specify gpu device [default: 0]')
     parser.add_argument('--num_point', type=int, default=1024, help='Point Number [default: 1024]')
     parser.add_argument('--log_dir', type=str, default='vn_dgcnn/aligned', help='Experiment root [default: vn_dgcnn/aligned]')
@@ -148,7 +148,7 @@ def main(args):
             weight_decay=args.decay_rate
         )
     else:
-        optimizer = torch.optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
+        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate*100, momentum=0.9)
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.7)
     global_epoch = 0

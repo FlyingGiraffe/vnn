@@ -4,6 +4,8 @@ Created by <a href="https://cs.stanford.edu/~congyue/" target="_blank">Congyue D
 
 We introduce a general framework built on top of what we call Vector Neurons for creating SO(3) equivariant neural networks. Extending neurons from single scalars to 3D vectors, our vector neurons transport SO(3) actions to latent spaces and provide a framework for building equivariance in common neural operations including linear layers, non-linearities, pooling, and normalization.
 
+This repo only contains classification and segmentation experiments, for neural implicit reconstruction please see [here](https://github.com/FlyingGiraffe/vnn-neural-implicits).
+
 [[Project]](https://cs.stanford.edu/~congyue/vnn/) [[Paper]](https://arxiv.org/pdf/2104.12229.pdf)
 
 ## Overview

@@ -139,7 +139,12 @@ def main(args):
             weight_decay=args.decay_rate
         )
     else:
-        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate*100, momentum=0.9)
+        optimizer = torch.optim.SGD(
+            classifier.parameters(),
+            lr=args.learning_rate*100,
+            momentum=0.9,
+            weight_decay=args.decay_rate
+        )
 
     def bn_momentum_adjust(m, momentum):
         if isinstance(m, torch.nn.BatchNorm2d) or isinstance(m, torch.nn.BatchNorm1d):

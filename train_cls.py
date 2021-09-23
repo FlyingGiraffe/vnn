@@ -148,7 +148,12 @@ def main(args):
             weight_decay=args.decay_rate
         )
     else:
-        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate*100, momentum=0.9)
+        optimizer = torch.optim.SGD(
+            classifier.parameters(),
+            lr=args.learning_rate*100,
+            momentum=0.9,
+            weight_decay=args.decay_rate
+        )
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.7)
     global_epoch = 0

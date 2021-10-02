@@ -4,9 +4,12 @@ Created by <a href="https://cs.stanford.edu/~congyue/" target="_blank">Congyue D
 
 We introduce a general framework built on top of what we call Vector Neurons for creating SO(3) equivariant neural networks. Extending neurons from single scalars to 3D vectors, our vector neurons transport SO(3) actions to latent spaces and provide a framework for building equivariance in common neural operations including linear layers, non-linearities, pooling, and normalization.
 
-This repo only contains classification and segmentation experiments, for neural implicit reconstruction please see [here](https://github.com/FlyingGiraffe/vnn-neural-implicits/).
+**[Paper](https://arxiv.org/pdf/2104.12229.pdf) | [Project](https://cs.stanford.edu/~congyue/vnn/) | [Short Video](https://www.youtube.com/watch?v=aJy4eMvdTpA&t=4s)**
 
-[[Project]](https://cs.stanford.edu/~congyue/vnn/) [[Paper]](https://arxiv.org/pdf/2104.12229.pdf)
+### :u6709: Other Implementations
+
++ **[[Neural Implicit Reconstruction]](https://github.com/FlyingGiraffe/vnn-neural-implicits/)** Neural implicit reconstruction experiments in the paper.
++ **[[Pointcloud Networks]](https://github.com/FlyingGiraffe/vnn-pc/)** Separate training setups for VN-PointNet and VN-DGCNN.
 
 ## Overview
 `vnn` is the author's implementation of Vector Neuron Networks with PointNet and DGCNN backbones. The current version only supports input data without normals.

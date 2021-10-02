@@ -105,7 +105,7 @@ class get_model(nn.Module):
         x = self.conv11(x)
         
         trans_feat = None
-        return x, trans_feat
+        return x.transpose(1, 2), trans_feat
 
 
 class get_loss(torch.nn.Module):

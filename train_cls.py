@@ -64,7 +64,7 @@ def test(model, loader, num_class=40):
 
         if args.single_view_prob_test > 0:
             # TODO: this routine returns a nested_tensor which may not work below. 
-            # points, _ = single_view_point_cloud(points, prob=args.single_view_prob_test)
+            # points, _ = provider.single_view_point_cloud(points, prob=args.single_view_prob_test)
             pass
         
         target = target[:, 0]
@@ -193,7 +193,7 @@ def main(args):
                 # modify calling conventions for these routines (or write new
                 # versions of these routines) to support nested_tensors.
                 #
-                # points, _ = single_view_point_cloud(points, prob=args.single_view_prob_train)
+                # points, _ = provider.single_view_point_cloud(points, prob=args.single_view_prob_train)
                 pass
             
             points = points.data.numpy()

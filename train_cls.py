@@ -222,7 +222,7 @@ def main(args):
 
 
         with torch.no_grad():
-            instance_acc, class_acc = test(classifier.eval(), testDataLoader)
+            instance_acc, class_acc = test(classifier.eval(), testDataLoader, num_class)
 
             if (instance_acc >= best_instance_acc):
                 best_instance_acc = instance_acc

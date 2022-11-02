@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+import torch
 from data_utils.ModelNetDataLoader import pc_normalize
 
 def single_view_point_cloud(batch_data, prob=0.5):

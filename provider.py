@@ -1,4 +1,43 @@
 import numpy as np
+import open3d as o3d
+from data_utils.ModelNetDataLoader import pc_normalize
+
+def single_view_point_cloud(batch_data, prob=0.5):
+    """ Randomly convert point cloud to single view to augument the dataset
+        Uses Open3D "Hidden Point Removal" algorithm (http://www.open3d.org/docs/release/tutorial/geometry/pointcloud.html#Hidden-point-removal) 
+        Conversion is per shape with camera placed along +z axis, works with and without normals
+        Input:
+          batch_data: BxNx3 (or BxNx6) array, original batch of point clouds (and optional normals)
+          prob: per-shape probability of single-view point cloud conversion
+        Return:
+          processed_data: length-B nested_tensor, processed batch of point clouds (and optional normals)
+    """
+    B, N, C = batch_data.shape
+    processed_data = []
+    processed = torch.zeros(B, dtype=torch.bool)
+    for k in range(batch_data.shape[0]):
+        if np.random.uniform() < prob:
+            # Convert point cloud to single view
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(batch_data[k, :, 0:3])
+            diameter = np.linalg.norm(np.asarray(pcd.get_max_bound()) - np.asarray(pcd.get_min_bound()))
+            camera = [0, 0, diameter]
+            radius = diameter * 100
+            _, pt_map = pcd.hidden_point_removal(camera, radius)
+            points = np.asarray(pcd.select_by_index(pt_map).points)
+            # Renormalize single-view point cloud
+            points = pc_normalize(points)
+            # Concatenate matching normals if they exist
+            points = np.concatenate([points, batch_data[k, pt_map, 3:6]], axis=-1)
+            # Convert to tensor and update processed flag
+            processed_data.append(torch.tensor(points, dtype=torch.float32))
+            processed[k] = True
+        else:
+            # Leave multi-view point cloud alone
+            processed_data.append(batch_data[k])
+    processed_data = torch.nested_tensor(processed_data)
+    return processed_data, processed
+
 
 def normalize_data(batch_data):
     """ Normalize the batch data, use coordinates of the block centered at origin,

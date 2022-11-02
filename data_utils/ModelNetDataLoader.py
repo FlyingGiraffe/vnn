@@ -37,19 +37,20 @@ def farthest_point_sample(point, npoint):
     return point
 
 class ModelNetDataLoader(Dataset):
-    def __init__(self, root,  npoint=1024, split='train', uniform=False, normal_channel=True, cache_size=15000):
+    def __init__(self, root,  npoint=1024, split='train', uniform=False, normal_channel=True, cache_size=15000, subset='modelnet40'):
         self.root = root
         self.npoints = npoint
         self.uniform = uniform
-        self.catfile = os.path.join(self.root, 'modelnet40_shape_names.txt')
+        self.catfile = os.path.join(self.root, f'{subset}_shape_names.txt')
 
         self.cat = [line.rstrip() for line in open(self.catfile)]
         self.classes = dict(zip(self.cat, range(len(self.cat))))
+        self.class_names = {v: k for k, v in self.classes.items()}
         self.normal_channel = normal_channel
 
         shape_ids = {}
-        shape_ids['train'] = [line.rstrip() for line in open(os.path.join(self.root, 'modelnet40_train.txt'))]
-        shape_ids['test'] = [line.rstrip() for line in open(os.path.join(self.root, 'modelnet40_test.txt'))]
+        shape_ids['train'] = [line.rstrip() for line in open(os.path.join(self.root, f'{subset}_train.txt'))]
+        shape_ids['test'] = [line.rstrip() for line in open(os.path.join(self.root, f'{subset}_test.txt'))]
 
         assert (split == 'train' or split == 'test')
         shape_names = ['_'.join(x.split('_')[0:-1]) for x in shape_ids[split]]

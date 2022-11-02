@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument('--epoch', default=250, type=int, help='Number of epoch in training [default: 250]')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate (for SGD it is multiplied by 100) [default: 0.001]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='Decay rate [default: 1e-4]')
-    parser.add_argument('--optimizer', type=str, default='SGD', help='Pptimizer for training [default: SGD]')
+    parser.add_argument('--optimizer', type=str, default='SGD', help='Optimizer for training [default: SGD]')
     parser.add_argument('--gpu', type=str, default='0', help='Specify gpu device [default: 0]')
     parser.add_argument('--num_point', type=int, default=1024, help='Point Number [default: 1024]')
     parser.add_argument('--log_dir', type=str, default='vn_dgcnn/aligned', help='Experiment root [default: vn_dgcnn/aligned]')
@@ -43,6 +43,9 @@ def parse_args():
     parser.add_argument('--pooling', type=str, default='mean', help='VNN only: pooling method [default: mean]',
                         choices=['mean', 'max'])
     parser.add_argument('--n_knn', default=20, type=int, help='Number of nearest neighbors to use, not applicable to PointNet [default: 20]')
+    parser.add_argument('--subset', default='modelnet40', type=str, help='Subset to use for training [modelnet10, modelnet40 (default)]')
+    parser.add_argument('--single_view_prob_train', default=0.0, type=float, help='Probability of single-view point cloud conversion for training [default: 0]')
+    parser.add_argument('--single_view_prob_test', default=0.0, type=float, help='Probability of single-view point cloud conversion for testing [default: 0]')
     return parser.parse_args()
 
 def test(model, loader, num_class=40):
@@ -58,6 +61,11 @@ def test(model, loader, num_class=40):
             trot = Rotate(R=random_rotations(points.shape[0]))
         if trot is not None:
             points = trot.transform_points(points)
+
+        if args.single_view_prob_test > 0:
+            # TODO: this routine returns a nested_tensor which may not work below. 
+            # points, _ = single_view_point_cloud(points, prob=args.single_view_prob_test)
+            pass
         
         target = target[:, 0]
         points = points.transpose(2, 1)
@@ -114,16 +122,16 @@ def main(args):
     log_string(args)
 
     '''DATA LOADING'''
-    log_string('Load dataset ...')
+    log_string(f'Load dataset {args.subset}...')
     DATA_PATH = 'data/modelnet40_normal_resampled/'
 
-    TRAIN_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='train', normal_channel=args.normal)
-    TEST_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='test', normal_channel=args.normal)
+    TRAIN_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='train', normal_channel=args.normal, subset=args.subset)
+    TEST_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='test', normal_channel=args.normal, subset=args.subset)
     trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET, batch_size=args.batch_size, shuffle=True, num_workers=4)
     testDataLoader = torch.utils.data.DataLoader(TEST_DATASET, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
     '''MODEL LOADING'''
-    num_class = 40
+    num_class = int(args.subset[-2:])
     MODEL = importlib.import_module(args.model)
 
     classifier = MODEL.get_model(args, num_class, normal_channel=args.normal).cuda()
@@ -178,6 +186,15 @@ def main(args):
                 trot = Rotate(R=random_rotations(points.shape[0]))
             if trot is not None:
                 points = trot.transform_points(points)
+
+            if args.single_view_prob_train > 0:
+                # TODO: this routine returns a nested_tensor which won't play
+                # nicely with dropout/scale/shift routines below. Will need to
+                # modify calling conventions for these routines (or write new
+                # versions of these routines) to support nested_tensors.
+                #
+                # points, _ = single_view_point_cloud(points, prob=args.single_view_prob_train)
+                pass
             
             points = points.data.numpy()
             points = provider.random_point_dropout(points)

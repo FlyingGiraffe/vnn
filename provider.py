@@ -11,33 +11,29 @@ def single_view_point_cloud(batch_data, prob=0.5):
           batch_data: BxNx3 (or BxNx6) array, original batch of point clouds (and optional normals)
           prob: per-shape probability of single-view point cloud conversion
         Return:
-          processed_data: length-B nested_tensor, processed batch of point clouds (and optional normals)
+          processed_data: BxNx3 (or BxNx6) array, processed batch of point clouds (and optional normals)
+          single_view: length B array, boolean flag for which point clouds were converted to single view
     """
-    B, N, C = batch_data.shape
-    processed_data = []
-    processed = torch.zeros(B, dtype=torch.bool)
-    for k in range(batch_data.shape[0]):
-        if np.random.uniform() < prob:
-            # Convert point cloud to single view
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(batch_data[k, :, 0:3])
-            diameter = np.linalg.norm(np.asarray(pcd.get_max_bound()) - np.asarray(pcd.get_min_bound()))
-            camera = [0, 0, diameter]
-            radius = diameter * 100
-            _, pt_map = pcd.hidden_point_removal(camera, radius)
-            points = np.asarray(pcd.select_by_index(pt_map).points)
-            # Renormalize single-view point cloud
-            points = pc_normalize(points)
-            # Concatenate matching normals if they exist
-            points = np.concatenate([points, batch_data[k, pt_map, 3:6]], axis=-1)
-            # Convert to tensor and update processed flag
-            processed_data.append(torch.tensor(points, dtype=torch.float32))
-            processed[k] = True
-        else:
-            # Leave multi-view point cloud alone
-            processed_data.append(batch_data[k])
-    processed_data = torch.nested_tensor(processed_data)
-    return processed_data, processed
+    processed_data = batch_data.copy()
+    single_view = np.random.uniform(size=batch_data.shape[0]) < prob
+    for k in np.argwhere(single_view).ravel():
+        # Convert point cloud to single view
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(batch_data[k, :, 0:3])
+        diameter = np.linalg.norm(np.asarray(pcd.get_max_bound()) - np.asarray(pcd.get_min_bound()))
+        camera = [0, 0, diameter]
+        radius = diameter * 100
+        _, pt_map = pcd.hidden_point_removal(camera, radius)
+        points = np.asarray(pcd.select_by_index(pt_map).points)
+        # Renormalize single-view point cloud
+        points = pc_normalize(points)
+        # Concatenate matching normals if they exist
+        points = np.concatenate([points, batch_data[k, pt_map, 3:6]], axis=-1)
+        # Place points in processed data array, padding with the first point
+        n = len(pt_map)
+        processed_data[k, :n, :] = points
+        processed_data[k, n:, :] = points[0]
+    return processed_data, single_view
 
 
 def normalize_data(batch_data):

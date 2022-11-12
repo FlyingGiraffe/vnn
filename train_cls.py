@@ -63,8 +63,9 @@ def test(model, loader, num_class=40):
             points = trot.transform_points(points)
 
         if args.single_view_prob_test > 0:
+            points = points.data.numpy()
             points, _ = provider.single_view_point_cloud(points, prob=args.single_view_prob_test)
-            points = points.to_padded_tensor(padding=0.0)
+            points = torch.Tensor(points)
         
         target = target[:, 0]
         points = points.transpose(2, 1)
@@ -187,15 +188,13 @@ def main(args):
                 points = trot.transform_points(points)
 
             points = points.data.numpy()
+            if args.single_view_prob_train > 0:
+                points, _ = provider.single_view_point_cloud(points, prob=args.single_view_prob_train)
             points = provider.random_point_dropout(points)
             points[:,:, 0:3] = provider.random_scale_point_cloud(points[:,:, 0:3])
             points[:,:, 0:3] = provider.shift_point_cloud(points[:,:, 0:3])
             points = torch.Tensor(points)
             target = target[:, 0]
-
-            if args.single_view_prob_train > 0:
-                points, _ = provider.single_view_point_cloud(points, prob=args.single_view_prob_train)
-                points = points.to_padded_tensor(padding=0.0)
 
             points = points.transpose(2, 1)
             points, target = points.cuda(), target.cuda()

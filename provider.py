@@ -24,7 +24,10 @@ def single_view_point_cloud(batch_data, prob=0.5):
         camera = [0, 0, diameter]
         radius = diameter * 100
         _, pt_map = pcd.hidden_point_removal(camera, radius)
-        points = np.asarray(pcd.select_by_index(pt_map).points)
+        if o3d.__version__ == '0.9.0.0':
+            points = np.asarray(pcd.select_down_sample(pt_map).points)
+        else:
+            points = np.asarray(pcd.select_by_index(pt_map).points)
         # Renormalize single-view point cloud
         points = pc_normalize(points)
         # Concatenate matching normals if they exist

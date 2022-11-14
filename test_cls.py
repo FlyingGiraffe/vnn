@@ -11,6 +11,7 @@ import torch
 import logging
 from tqdm import tqdm
 import sys
+import provider
 import importlib
 from pytorch3d.transforms import RotateAxisAngle, Rotate, random_rotations
 
@@ -35,9 +36,11 @@ def parse_args():
     parser.add_argument('--pooling', type=str, default='mean', help='VNN only: pooling method [default: mean]',
                         choices=['mean', 'max'])
     parser.add_argument('--n_knn', default=20, type=int, help='Number of nearest neighbors to use, not applicable to PointNet [default: 20]')
+    parser.add_argument('--subset', default='modelnet40', type=str, help='Subset to use for training [modelnet10, modelnet40 (default)]')
+    parser.add_argument('--single_view_prob_test', nargs='+', default=[0.0], type=float, help='Probability of single-view point cloud conversion for testing [default: 0]')
     return parser.parse_args()
 
-def test(model, loader, num_class=40, vote_num=1):
+def test(model, loader, num_class=40, vote_num=1, single_view_prob_test=0.0):
     mean_correct = []
     class_acc = np.zeros((num_class,3))
     for j, data in tqdm(enumerate(loader), total=len(loader)):
@@ -48,6 +51,11 @@ def test(model, loader, num_class=40, vote_num=1):
         elif args.rot == 'so3':
             trot = Rotate(R=random_rotations(points.shape[0]))
         points = trot.transform_points(points)
+
+        if single_view_prob_test > 0:
+            points = points.data.numpy()
+            points, _ = provider.single_view_point_cloud(points, prob=single_view_prob_test)
+            points = torch.Tensor(points)
         
         target = target[:, 0]
         points = points.transpose(2, 1)
@@ -87,7 +95,7 @@ def main(args):
     logger = logging.getLogger("Model")
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('%s/eval.txt' % experiment_dir)
+    file_handler = logging.FileHandler(f'{experiment_dir}/eval_{args.rot}.txt')
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -97,11 +105,11 @@ def main(args):
     '''DATA LOADING'''
     log_string('Load dataset ...')
     DATA_PATH = 'data/modelnet40_normal_resampled/'
-    TEST_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='test', normal_channel=args.normal)
+    TEST_DATASET = ModelNetDataLoader(root=DATA_PATH, npoint=args.num_point, split='test', normal_channel=args.normal, subset=args.subset)
     testDataLoader = torch.utils.data.DataLoader(TEST_DATASET, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
     '''MODEL LOADING'''
-    num_class = 40
+    num_class = int(args.subset[-2:])
     MODEL = importlib.import_module(args.model)
     
     classifier = MODEL.get_model(args, num_class, normal_channel=args.normal).cuda()
@@ -110,8 +118,9 @@ def main(args):
     classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():
-        instance_acc, class_acc = test(classifier.eval(), testDataLoader, vote_num=args.num_votes)
-        log_string('Test Instance Accuracy: %f, Class Accuracy: %f' % (instance_acc, class_acc))
+        for prob in args.single_view_prob_test:
+            instance_acc, class_acc = test(classifier.eval(), testDataLoader, num_class=num_class, vote_num=args.num_votes, single_view_prob_test=prob)
+            log_string('Single-View Probability: %f, Test Instance Accuracy: %f, Class Accuracy: %f' % (prob, instance_acc, class_acc))
 
 
 

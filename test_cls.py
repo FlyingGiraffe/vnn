@@ -38,6 +38,7 @@ def parse_args():
     parser.add_argument('--n_knn', default=20, type=int, help='Number of nearest neighbors to use, not applicable to PointNet [default: 20]')
     parser.add_argument('--subset', default='modelnet40', type=str, help='Subset to use for training [modelnet10, modelnet40 (default)]')
     parser.add_argument('--single_view_prob_test', nargs='+', default=[0.0], type=float, help='Probability of single-view point cloud conversion for testing [default: 0]')
+    parser.add_argument('--num_tests', type=int, default=5, help='Compute test accuracy this many times and take the average [default: 5]')
     return parser.parse_args()
 
 def test(model, loader, num_class=40, vote_num=1, single_view_prob_test=0.0):
@@ -119,8 +120,15 @@ def main(args):
 
     with torch.no_grad():
         for prob in args.single_view_prob_test:
-            instance_acc, class_acc = test(classifier.eval(), testDataLoader, num_class=num_class, vote_num=args.num_votes, single_view_prob_test=prob)
-            log_string('Single-View Probability: %f, Test Instance Accuracy: %f, Class Accuracy: %f' % (prob, instance_acc, class_acc))
+            mean_instance_acc = 0.0
+            mean_class_acc = 0.0
+            for _ in range(args.num_tests):
+                instance_acc, class_acc = test(classifier.eval(), testDataLoader, num_class=num_class, vote_num=args.num_votes, single_view_prob_test=prob)
+                mean_instance_acc += instance_acc
+                mean_class_acc += class_acc
+            mean_instance_acc /= args.num_tests
+            mean_class_acc /= args.num_tests
+            log_string('Single-View Probability: %f, Test Instance Accuracy: %f, Class Accuracy: %f' % (prob, mean_instance_acc, mean_class_acc))
 
 
 
